@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: sanzu-debian
-          path: ./target/debian/*
+          path: ./target/debian/sanzu*.deb
 
   docker-alma8:
     runs-on: ubuntu-latest
@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: sanzu-alma8
-          path: ./target/generate-rpm/*
+          path: ./target/generate-rpm/sanzu*.rpm
 
   docker-alma9:
     runs-on: ubuntu-latest
@@ -81,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: sanzu-alma9
-          path: ./target/generate-rpm/*
+          path: ./target/generate-rpm/sanzu*.rpm
 
 #  build-windows:
 #    runs-on: windows-latest
@@ -165,7 +165,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: sanzu-windows
-          path: ./target/windows/*
+          path: ./target/windows/sanzu*.zip
 
   release:
     # From https://github.com/cloudflare/wrangler/blob/master/.github/workflows/release.yml
