@@ -24,7 +24,7 @@ jobs:
       - name: Upload resulting 'alpine bins'
         uses: actions/upload-artifact@v3
         with:
-          name: sanzu_alpine
+          name: sanzu-alpine
           path: ./target/release/sanzu_client
 
 
@@ -70,4 +70,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./sanzu-alpine
           asset_content_type: application/octet-stream
-          asset_name: sanzu-alpine-${{ steps.get_version.outputs.VERSION }}
+          asset_name: sanzu-alpine${{ steps.get_version.outputs.VERSION }}
