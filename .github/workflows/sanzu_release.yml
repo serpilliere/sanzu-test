@@ -25,7 +25,12 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: sanzu-alpine
-          path: ./target/release/*
+          path: |
+            ./target/release/sanzu_client
+            ./target/release/sanzu_server
+            ./target/release/sanzu_proxy
+            ./target/release/sanzu_broker
+
 
   docker-debian:
     runs-on: ubuntu-latest
