@@ -78,76 +78,94 @@ jobs:
           name: sanzu-alma9
           path: ./target/generate-rpm/*
 
-  build-windows:
-    runs-on: windows-latest
+#  build-windows:
+#    runs-on: windows-latest
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#    - uses: actions-rs/toolchain@v1
+#      with:
+#        toolchain: stable
+#
+#    - name: dl full ffmpeg binaries
+#      run: |
+#        curl -L  -o ffmpeg.zip https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n4.4-latest-win64-gpl-shared-4.4.zip
+#
+#    - name: dl full ffmpeg binaries
+#      run: |
+#        unzip -qq ffmpeg.zip -d ffmpeg
+#
+#    - name: cp files
+#      run: |
+#         cp ffmpeg\ffmpeg-n4.4-latest-win64-gpl-shared-4.4\bin\* .
+#
+#    - name: install cargo wix
+#      run: |
+#        cargo install --git https://github.com/volks73/cargo-wix --tag 0.3.4 cargo-wix
+#
+#    - name: prepare vcpkg
+#      run: |
+#        vcpkg integrate install
+#
+#    - name: install ffmpeg
+#      run: |
+#        vcpkg install ffmpeg[gpl,x264]:x64-windows
+#
+#    - name: install protoc
+#      uses: arduino/setup-protoc@v1
+#
+#    - name: Build
+#      env:
+#        RUSTFLAGS: -D warnings
+#      uses: actions-rs/cargo@v1
+#      with:
+#        command: build
+#        args: --release --verbose -p sanzu --no-default-features
+#
+#    - name: run cargo wix
+#      run: |
+#         cargo wix --nocapture --package=sanzu
+#
+#    - name: Upload resulting 'sanzu_client.exe'
+#      uses: actions/upload-artifact@v1
+#      with:
+#        name: sanzu_client.exe
+#        path: ./target/release/sanzu_client.exe
+#
+#    - name: Upload resulting 'sanzu_server.exe'
+#      uses: actions/upload-artifact@v1
+#      with:
+#        name: sanzu_server.exe
+#        path: ./target/release/sanzu_server.exe
+#
+#    - name: Upload resulting sanzu msi
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: sanzu.msi
+#        path: ./target/wix/*.msi
+#
 
+  docker-windows:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+      - name: build
+        run: cargo clean && cd build && make windows
 
-    - name: dl full ffmpeg binaries
-      run: |
-        curl -L  -o ffmpeg.zip https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n4.4-latest-win64-gpl-shared-4.4.zip
-
-    - name: dl full ffmpeg binaries
-      run: |
-        unzip -qq ffmpeg.zip -d ffmpeg
-
-    - name: cp files
-      run: |
-         cp ffmpeg\ffmpeg-n4.4-latest-win64-gpl-shared-4.4\bin\* .
-
-    - name: install cargo wix
-      run: |
-        cargo install --git https://github.com/volks73/cargo-wix --tag 0.3.4 cargo-wix
-
-    - name: prepare vcpkg
-      run: |
-        vcpkg integrate install
-
-    - name: install ffmpeg
-      run: |
-        vcpkg install ffmpeg[gpl,x264]:x64-windows
-
-    - name: install protoc
-      uses: arduino/setup-protoc@v1
-
-    - name: Build
-      env:
-        RUSTFLAGS: -D warnings
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --release --verbose -p sanzu --no-default-features
-
-    - name: run cargo wix
-      run: |
-         cargo wix --nocapture --package=sanzu
-
-    - name: Upload resulting 'sanzu_client.exe'
-      uses: actions/upload-artifact@v1
-      with:
-        name: sanzu_client.exe
-        path: ./target/release/sanzu_client.exe
-
-    - name: Upload resulting 'sanzu_server.exe'
-      uses: actions/upload-artifact@v1
-      with:
-        name: sanzu_server.exe
-        path: ./target/release/sanzu_server.exe
-
-    - name: Upload resulting sanzu msi
-      uses: actions/upload-artifact@v3
-      with:
-        name: sanzu.msi
-        path: ./target/wix/*.msi
+      - name: Upload resulting 'windows pkg'
+        uses: actions/upload-artifact@v3
+        with:
+          name: sanzu-windows
+          path: ./target/windows/*
 
   release:
     # From https://github.com/cloudflare/wrangler/blob/master/.github/workflows/release.yml
     name: GitHub Release
-    needs: [docker-alpine, docker-alma8, docker-alma9, docker-debian, build-windows]
+    needs: [docker-alpine, docker-alma8, docker-alma9, docker-debian, docker-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Query version number
@@ -193,20 +211,20 @@ jobs:
         with:
           name: sanzu-alma9
 
-      - name: Download Windows client artifact
+      - name: Download Windows artifact
         uses: actions/download-artifact@v1
         with:
-          name: sanzu_client.exe
+          name: sanzu-windows
 
-      - name: Download Windows server artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: sanzu_server.exe
+      # - name: Download Windows client artifact
+      #   uses: actions/download-artifact@v1
+      #   with:
+      #     name: sanzu_client.exe
 
-      - name: Download Windows msi artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: sanzu.msi
+      # - name: Download Windows server artifact
+      #   uses: actions/download-artifact@v1
+      #   with:
+      #     name: sanzu_server.exe
 
       - name: lsdir
         shell: bash
@@ -232,6 +250,11 @@ jobs:
         shell: bash
         run: |
           zip -r sanzu-alma9.zip sanzu-alma9
+
+      - name: compression_windows
+        shell: bash
+        run: |
+          zip -r sanzu-windows.zip sanzu-windows
 
       - name: Release Alpine artifact
         uses: actions/upload-release-asset@v1
@@ -274,12 +297,22 @@ jobs:
           asset_name: sanzu-alma9-${{ steps.get_version.outputs.VERSION }}.zip
 
 
+      # - name: Release Windows artifact
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./sanzu.msi
+      #     asset_content_type: application/octet-stream
+      #     asset_name: sanzu-${{ steps.get_version.outputs.VERSION }}.msi
+
       - name: Release Windows artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./sanzu.msi
+          asset_path: ./sanzu-windows.zip
           asset_content_type: application/octet-stream
-          asset_name: sanzu-${{ steps.get_version.outputs.VERSION }}.msi
+          asset_name: sanzu-windows-${{ steps.get_version.outputs.VERSION }}.zip
