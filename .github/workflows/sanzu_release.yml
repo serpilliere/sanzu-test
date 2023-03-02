@@ -60,7 +60,7 @@ jobs:
       - name: Download Alpine artifact
         uses: actions/download-artifact@v1
         with:
-          name: sanzu_alpine
+          name: sanzu-alpine
 
       - name: Release Alpine artifact
         uses: actions/upload-release-asset@v1
