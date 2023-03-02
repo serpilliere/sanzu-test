@@ -141,7 +141,7 @@ jobs:
     - name: Upload resulting sanzu msi
       uses: actions/upload-artifact@v3
       with:
-        name: sanzu-msi.msi
+        name: sanzu.msi
         path: ./target/wix/*.msi
 
   release:
@@ -193,6 +193,21 @@ jobs:
         with:
           name: sanzu-alma9
 
+      - name: Download Windows client artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: sanzu_client.exe
+
+      - name: Download Windows server artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: sanzu_server.exe
+
+      - name: Download Windows msi artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: sanzu.msi
+
       - name: lsdir
         shell: bash
         run: |
@@ -214,11 +229,6 @@ jobs:
           zip -r sanzu-alma8.zip sanzu-alma8
 
       - name: compression_alma9
-        shell: bash
-        run: |
-          zip -r sanzu-alma9.zip sanzu-alma9
-
-      - name: compression_windows
         shell: bash
         run: |
           zip -r sanzu-alma9.zip sanzu-alma9
@@ -270,6 +280,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./sanzu-msi.msi
+          asset_path: ./sanzu.msi
           asset_content_type: application/octet-stream
-          asset_name: sanzu-windows-${{ steps.get_version.outputs.VERSION }}.msi
+          asset_name: sanzu-${{ steps.get_version.outputs.VERSION }}.msi
