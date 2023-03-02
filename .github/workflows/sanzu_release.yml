@@ -46,7 +46,7 @@ jobs:
       - name: Upload resulting 'alma8 pkg'
         uses: actions/upload-artifact@v3
         with:
-          name: alma8-pkg
+          name: sanzu-alma8
           path: ./target/generate-rpm/*
 
   docker-alma9:
@@ -63,7 +63,7 @@ jobs:
       - name: Upload resulting 'alma9 pkg'
         uses: actions/upload-artifact@v3
         with:
-          name: alma9-pkg
+          name: sanzu-alma9
           path: ./target/generate-rpm/*
 
   release:
@@ -76,8 +76,8 @@ jobs:
         id: get_version
         shell: bash
         run: |
-          echo "using version tag ${GITHUB_REF:15}"
-          echo ::set-output name=version::"${GITHUB_REF:15}"
+          echo "using version tag ${GITHUB_REF:17}"
+          echo ::set-output name=version::"${GITHUB_REF:17}"
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Get Changelog Entry
@@ -91,8 +91,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: sanzu${{ steps.get_version.outputs.VERSION }}
-          release_name: sanzu${{ steps.get_version.outputs.VERSION }}
+          tag_name: sanzu-${{ steps.get_version.outputs.VERSION }}
+          release_name: sanzu-${{ steps.get_version.outputs.VERSION }}
           draft: true
 
       - name: Download Alpine artifact
@@ -103,12 +103,12 @@ jobs:
       - name: Download Alma8 artifact
         uses: actions/download-artifact@v1
         with:
-          name: alma8-pkg
+          name: sanzu-alma8
 
       - name: Download Alma9 artifact
         uses: actions/download-artifact@v1
         with:
-          name: alma9-pkg
+          name: sanzu-alma9
 
       - name: lsdir
         shell: bash
@@ -123,12 +123,12 @@ jobs:
       - name: compression_alma8
         shell: bash
         run: |
-          zip -r alma8-pkg.zip alma8-pkg
+          zip -r sanzu-alma8.zip sanzu-alma8
 
       - name: compression_alma9
         shell: bash
         run: |
-          zip -r alma9-pkg.zip alma9-pkg
+          zip -r sanzu-alma9.zip sanzu-alma9
 
       - name: Release Alpine artifact
         uses: actions/upload-release-asset@v1
@@ -138,7 +138,7 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./sanzu-alpine.zip
           asset_content_type: application/octet-stream
-          asset_name: sanzu-alpine${{ steps.get_version.outputs.VERSION }}.zip
+          asset_name: sanzu-alpine-${{ steps.get_version.outputs.VERSION }}.zip
 
       - name: Release Alma8 artifact
         uses: actions/upload-release-asset@v1
@@ -146,9 +146,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./alma8-pkg.zip
+          asset_path: ./sanzu-alma8.zip
           asset_content_type: application/octet-stream
-          asset_name: sanzu-alma8{{ steps.get_version.outputs.VERSION }}.zip
+          asset_name: sanzu-alma8-${{ steps.get_version.outputs.VERSION }}.zip
 
       - name: Release Alma9 artifact
         uses: actions/upload-release-asset@v1
@@ -156,6 +156,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./alma9-pkg.zip
+          asset_path: ./sanzu-alma9.zip
           asset_content_type: application/octet-stream
-          asset_name: sanzu-alma9{{ steps.get_version.outputs.VERSION }}.zip
+          asset_name: sanzu-alma9-${{ steps.get_version.outputs.VERSION }}.zip
