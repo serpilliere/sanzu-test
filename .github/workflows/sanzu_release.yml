@@ -25,12 +25,24 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: sanzu-alpine
-          path: ./target/release/sanzu_client
-      - name: lsdir
-        shell: bash
-        run: |
-          find .
+          path: ./target/release/*
 
+  docker-debian:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+      - name: build
+        run: cargo clean && cd build && make debian
+
+      - name: Upload resulting 'debian pkg'
+        uses: actions/upload-artifact@v3
+        with:
+          name: sanzu-debian
+          path: ./target/debian/*
 
   docker-alma8:
     runs-on: ubuntu-latest
@@ -66,6 +78,72 @@ jobs:
           name: sanzu-alma9
           path: ./target/generate-rpm/*
 
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: dl full ffmpeg binaries
+      run: |
+        curl -L  -o ffmpeg.zip https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n4.4-latest-win64-gpl-shared-4.4.zip
+
+    - name: dl full ffmpeg binaries
+      run: |
+        unzip -qq ffmpeg.zip -d ffmpeg
+
+    - name: cp files
+      run: |
+         cp ffmpeg\ffmpeg-n4.4-latest-win64-gpl-shared-4.4\bin\* .
+
+    - name: install cargo wix
+      run: |
+        cargo install --git https://github.com/volks73/cargo-wix --tag 0.3.4 cargo-wix
+
+    - name: prepare vcpkg
+      run: |
+        vcpkg integrate install
+
+    - name: install ffmpeg
+      run: |
+        vcpkg install ffmpeg[gpl,x264]:x64-windows
+
+    - name: install protoc
+      uses: arduino/setup-protoc@v1
+
+    - name: Build
+      env:
+        RUSTFLAGS: -D warnings
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release --verbose -p sanzu --no-default-features
+
+    - name: run cargo wix
+      run: |
+         cargo wix --nocapture --package=sanzu
+
+    - name: Upload resulting 'sanzu_client.exe'
+      uses: actions/upload-artifact@v1
+      with:
+        name: sanzu_client.exe
+        path: ./target/release/sanzu_client.exe
+
+    - name: Upload resulting 'sanzu_server.exe'
+      uses: actions/upload-artifact@v1
+      with:
+        name: sanzu_server.exe
+        path: ./target/release/sanzu_server.exe
+
+    - name: Upload resulting sanzu msi
+      uses: actions/upload-artifact@v3
+      with:
+        name: sanzu_msi
+        path: ./target/wix/*.msi
+
   release:
     # From https://github.com/cloudflare/wrangler/blob/master/.github/workflows/release.yml
     name: GitHub Release
@@ -100,6 +178,11 @@ jobs:
         with:
           name: sanzu-alpine
 
+      - name: Download Debian artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: sanzu-debian
+
       - name: Download Alma8 artifact
         uses: actions/download-artifact@v1
         with:
@@ -120,6 +203,11 @@ jobs:
         run: |
           zip -r sanzu-alpine.zip sanzu-alpine
 
+      - name: compression_debian
+        shell: bash
+        run: |
+          zip -r sanzu-debian.zip sanzu-debian
+
       - name: compression_alma8
         shell: bash
         run: |
@@ -139,6 +227,16 @@ jobs:
           asset_path: ./sanzu-alpine.zip
           asset_content_type: application/octet-stream
           asset_name: sanzu-alpine-${{ steps.get_version.outputs.VERSION }}.zip
+
+      - name: Release Debian artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./sanzu-debian.zip
+          asset_content_type: application/octet-stream
+          asset_name: sanzu-debian-${{ steps.get_version.outputs.VERSION }}.zip
 
       - name: Release Alma8 artifact
         uses: actions/upload-release-asset@v1
