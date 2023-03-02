@@ -24,7 +24,7 @@ jobs:
       - name: Upload resulting 'alpine bins'
         uses: actions/upload-artifact@v3
         with:
-          name: sanzu-alpine
+          name: sanzu-alpine-release
           path: |
             ./target/release/sanzu_client
             ./target/release/sanzu_server
@@ -46,7 +46,7 @@ jobs:
       - name: Upload resulting 'debian pkg'
         uses: actions/upload-artifact@v3
         with:
-          name: sanzu-debian
+          name: sanzu-debian-release
           path: ./target/debian/sanzu*.deb
 
   docker-alma8:
@@ -63,7 +63,7 @@ jobs:
       - name: Upload resulting 'alma8 pkg'
         uses: actions/upload-artifact@v3
         with:
-          name: sanzu-alma8
+          name: sanzu-alma8-release
           path: ./target/generate-rpm/sanzu*.rpm
 
   docker-alma9:
@@ -80,7 +80,7 @@ jobs:
       - name: Upload resulting 'alma9 pkg'
         uses: actions/upload-artifact@v3
         with:
-          name: sanzu-alma9
+          name: sanzu-alma9-release
           path: ./target/generate-rpm/sanzu*.rpm
 
 #  build-windows:
@@ -164,7 +164,7 @@ jobs:
       - name: Upload resulting 'windows pkg'
         uses: actions/upload-artifact@v3
         with:
-          name: sanzu-windows
+          name: sanzu-windows-release
           path: ./target/windows/sanzu*.zip
 
   release:
@@ -199,27 +199,27 @@ jobs:
       - name: Download Alpine artifact
         uses: actions/download-artifact@v1
         with:
-          name: sanzu-alpine
+          name: sanzu-alpine-release
 
       - name: Download Debian artifact
         uses: actions/download-artifact@v1
         with:
-          name: sanzu-debian
+          name: sanzu-debian-release
 
       - name: Download Alma8 artifact
         uses: actions/download-artifact@v1
         with:
-          name: sanzu-alma8
+          name: sanzu-alma8-release
 
       - name: Download Alma9 artifact
         uses: actions/download-artifact@v1
         with:
-          name: sanzu-alma9
+          name: sanzu-alma9-release
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v1
         with:
-          name: sanzu-windows
+          name: sanzu-windows-release
 
       # - name: Download Windows client artifact
       #   uses: actions/download-artifact@v1
@@ -239,27 +239,27 @@ jobs:
       - name: compression_alpine
         shell: bash
         run: |
-          zip -r sanzu-alpine.zip sanzu-alpine
+          zip -r sanzu-alpine.zip sanzu-alpine-release
 
       - name: compression_debian
         shell: bash
         run: |
-          zip -r sanzu-debian.zip sanzu-debian
+          zip -r sanzu-debian.zip sanzu-debian-release
 
       - name: compression_alma8
         shell: bash
         run: |
-          zip -r sanzu-alma8.zip sanzu-alma8
+          zip -r sanzu-alma8.zip sanzu-alma8-release
 
       - name: compression_alma9
         shell: bash
         run: |
-          zip -r sanzu-alma9.zip sanzu-alma9
+          zip -r sanzu-alma9.zip sanzu-alma9-release
 
       - name: compression_windows
         shell: bash
         run: |
-          zip -r sanzu-windows.zip sanzu-windows
+          zip -r sanzu-windows.zip sanzu-windows-release
 
       - name: Release Alpine artifact
         uses: actions/upload-release-asset@v1
