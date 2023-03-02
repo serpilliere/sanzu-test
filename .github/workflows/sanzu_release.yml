@@ -26,6 +26,10 @@ jobs:
         with:
           name: sanzu-alpine
           path: ./target/release/sanzu_client
+      - name: lsdir
+        shell: bash
+        run: |
+          find .
 
 
   release:
