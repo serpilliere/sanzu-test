@@ -15,3 +15,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix windows sanzu client bad error code handling
 - CI: Generating binary release
+- toto
