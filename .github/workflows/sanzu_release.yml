@@ -53,8 +53,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: sanzu-${{ steps.get_version.outputs.VERSION }}
-          release_name: sanzu-${{ steps.get_version.outputs.VERSION }}
+          tag_name: sanzu${{ steps.get_version.outputs.VERSION }}
+          release_name: sanzu${{ steps.get_version.outputs.VERSION }}
           body: ${{ steps.changelog_reader.outputs.changes }}
           draft: true
 
