@@ -148,7 +148,7 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./alma8-pkg.zip
           asset_content_type: application/octet-stream
-          asset_name: sanzu-alma8{{ steps.get_version.outputs.VERSION }}.zip
+          asset_name: sanzu-alma8${{ steps.get_version.outputs.VERSION }}.zip
 
       - name: Release Alma9 artifact
         uses: actions/upload-release-asset@v1
@@ -158,4 +158,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./alma9-pkg.zip
           asset_content_type: application/octet-stream
-          asset_name: sanzu-alma9{{ steps.get_version.outputs.VERSION }}.zip
+          asset_name: sanzu-alma9${{ steps.get_version.outputs.VERSION }}.zip
