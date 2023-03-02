@@ -69,7 +69,7 @@ jobs:
       - name: compression_alpine
         shell: bash
         run: |
-          zip -r sanzu_alpine.zip sanzu_alpine
+          zip -r sanzu-alpine.zip sanzu-alpine
 
       - name: lsdir
         shell: bash
