@@ -32,10 +32,44 @@ jobs:
           find .
 
 
+  docker-alma8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+      - name: build
+        run: cargo clean && cd build && make almalinux8
+
+      - name: Upload resulting 'alma8 pkg'
+        uses: actions/upload-artifact@v3
+        with:
+          name: alma8-pkg
+          path: ./target/generate-rpm/*
+
+  docker-alma9:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+      - name: build
+        run: cargo clean && cd build && make almalinux9
+
+      - name: Upload resulting 'alma9 pkg'
+        uses: actions/upload-artifact@v3
+        with:
+          name: alma9-pkg
+          path: ./target/generate-rpm/*
+
   release:
     # From https://github.com/cloudflare/wrangler/blob/master/.github/workflows/release.yml
     name: GitHub Release
-    needs: docker-alpine
+    needs: [docker-alpine, docker-alma8, docker-alma9]
     runs-on: ubuntu-latest
     steps:
       - name: Query version number
@@ -66,15 +100,35 @@ jobs:
         with:
           name: sanzu-alpine
 
-      - name: compression_alpine
-        shell: bash
-        run: |
-          zip -r sanzu-alpine.zip sanzu-alpine
+      - name: Download Alma8 artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: alma8-pkg
+
+      - name: Download Alma9 artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: alma9-pkg
 
       - name: lsdir
         shell: bash
         run: |
           find .
+
+      - name: compression_alpine
+        shell: bash
+        run: |
+          zip -r sanzu-alpine.zip sanzu-alpine
+
+      - name: compression_alma8
+        shell: bash
+        run: |
+          zip -r alma8-pkg.zip alma8-pkg
+
+      - name: compression_alma9
+        shell: bash
+        run: |
+          zip -r alma9-pkg.zip alma9-pkg
 
       - name: Release Alpine artifact
         uses: actions/upload-release-asset@v1
@@ -85,3 +139,23 @@ jobs:
           asset_path: ./sanzu-alpine.zip
           asset_content_type: application/octet-stream
           asset_name: sanzu-alpine${{ steps.get_version.outputs.VERSION }}.zip
+
+      - name: Release Alma8 artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./alma8-pkg.zip
+          asset_content_type: application/octet-stream
+          asset_name: sanzu-alma8{{ steps.get_version.outputs.VERSION }}.zip
+
+      - name: Release Alma9 artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./alma9-pkg.zip
+          asset_content_type: application/octet-stream
+          asset_name: sanzu-alma9{{ steps.get_version.outputs.VERSION }}.zip
